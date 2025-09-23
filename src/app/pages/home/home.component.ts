@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
-import { NgFor } from "@angular/common";
+import { CommonModule } from '@angular/common';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { Task } from '../../models/task.model';
 
@@ -8,7 +9,7 @@ import { Task } from '../../models/task.model';
   standalone: true,
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
-  imports: [ NgFor ]
+  imports: [ CommonModule, ReactiveFormsModule]
 })
 export class HomeComponent {
   tasks = signal<Task[]>([
@@ -29,10 +30,19 @@ export class HomeComponent {
       }
   ]);
 
-  changeHandlerInput(event:Event){
-    const input = event.target as HTMLInputElement;
-    const newTask = input.value;
-    this.addTask(newTask)
+  newTaskCtrl =new FormControl('', {
+    nonNullable:true,
+    validators:[
+      Validators.required,
+    ]
+  })
+  changeHandlerInput(){
+    if(this.newTaskCtrl.valid){
+      const value= this.newTaskCtrl.value;
+      this.addTask(value);
+      this.newTaskCtrl.setValue('');
+    }
+    
   }
 
   addTask(title: string){

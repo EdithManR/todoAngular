@@ -8,7 +8,8 @@
         placeholder="Escriba nueva tarea"
         autofocus
         type="text"
-        (change)='changeHandlerInput($event)'
+        [formControl]="newTaskCtrl"
+        (keydown.enter)="changeHandlerInput()"
       />
     </div>
   </header>
@@ -56,7 +57,10 @@
     <!-- This footer should be hidden by default and shown when there are todos -->
     <footer class="footer">
       <!-- This should be `0 items left` by default -->
-      <span class="todo-count"><strong>{{ tasks().length }}</strong> Tareas restantes</span>
+      <span class="todo-count"><strong>{{ tasks().length }}</strong> 
+        <span *ngIf="tasks().length === 1; else elseBlock">Tarea restante</span>
+        <ng-template #elseBlock>Tareas restantes</ng-template>
+      </span>
       <!-- Remove this if you don't implement routing -->
       <!--<ul class="filters">
         <li>

@@ -1,11 +1,12 @@
 import { Component, signal } from '@angular/core';
-import { NgFor } from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
 
 @Component({
   selector: 'app-lab',
   standalone: true,
-  imports: [NgFor],
+  imports: [CommonModule,ReactiveFormsModule],
   templateUrl: './lab.component.html',
   styleUrl: './lab.component.css'
 })
@@ -26,10 +27,18 @@ export class LabComponent {
   age = 41;
   url = 'https://files.merca20.com/uploads/2020/07/NYCGifathon12.gif';
 
-  person = {
-    name: 'Elisa',
-    age: 26,
+  person = signal({
+    name: 'Erick',
+    age: 87,
     avatar: 'https://imgproxy.domestika.org/unsafe/w:820/plain/src://content-items/003/452/287/Knock_Knock-original.gif?1575047764',
+  });
+
+  colorCtrl = new FormControl();
+
+  constructor(){
+    this.colorCtrl.valueChanges.subscribe(value =>{
+      console.log(value);
+    })
   }
 
   clickHandler(){
@@ -49,5 +58,25 @@ export class LabComponent {
     //para modificar el valor
     this.name.set(newValue);
     console.log(this.name());
+  }
+  changeAge(event:Event){
+    const input = event.target as HTMLInputElement;
+    const newValue = input.value;
+    this.person.update(prevState => {
+      return{
+        ...prevState,
+        age:parseInt(newValue, 10)
+      }
+    })
+  }
+  changeName(event:Event){
+    const input = event.target as HTMLInputElement;
+    const newValue = input.value;
+    this.person.update(prevState => {
+      return{
+        ...prevState,
+        name:newValue
+      }
+    })
   }
 }
