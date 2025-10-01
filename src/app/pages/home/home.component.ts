@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, effect, Injector, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 
@@ -12,23 +12,39 @@ import { Task } from '../../models/task.model';
   imports: [ CommonModule, ReactiveFormsModule]
 })
 export class HomeComponent {
-  tasks = signal<Task[]>([
-      {
-        id: Date.now(),
-        title:'Reservar vuelos',
-        completed: true
-      },
-      {
-        id: Date.now(),
-        title:'Reservar Hotel',
-        completed: false
-      },
-      {
-        id: Date.now(),
-        title:'Preparar equipaje',
-        completed: false
-      }
-  ]);
+  tasks = signal<Task[]>([]);
+
+  filter= signal<'all' | 'pending' | 'completed'>('all');
+  //el computed retorna , calcula un nuevo estado a partir de otros
+  tasksByFilter = computed(()=>{
+    const filter = this.filter();
+    const tasks = this.tasks();
+    if(filter === 'pending'){
+      return tasks.filter(task => !task.completed);
+    }
+    if(filter === 'completed'){
+      return tasks.filter(task => task.completed);
+    }
+    return tasks;
+  })
+
+  injector = inject(Injector);
+
+  ngOnInit(){
+    const storage= localStorage.getItem('tasks');
+    if(storage){
+      const tasks= JSON.parse(storage);
+      this.tasks.set(tasks);
+    }
+    this.trackTasks();
+  }
+  trackTasks(){
+    //el efect no  retorna , solo hace traking o vigila cada vez que un estado cambia y permite ejecutar una lògica a partir de ellos
+    effect(()=>{
+      const tasks = this.tasks();
+      localStorage.setItem('tasks', JSON.stringify(tasks))
+    }, {injector: this.injector})
+  }
 
   newTaskCtrl =new FormControl('', {
     nonNullable:true,
@@ -36,6 +52,8 @@ export class HomeComponent {
       Validators.required,
     ]
   })
+
+ 
   changeHandlerInput(){
     if(this.newTaskCtrl.valid){
       const value= this.newTaskCtrl.value.trim();
@@ -106,5 +124,9 @@ export class HomeComponent {
         return task
       })
     });
+  }
+
+  changeFilter(filter:'all' | 'pending' | 'completed'){
+    this.filter.set(filter);
   }
 }
